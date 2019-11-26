@@ -11,6 +11,7 @@ knn <- function(age,loan, neighbours) {
     distance = c(distance,d)
   }
   df = data.frame(data[,4],distance)
+  print(df)
   df = df[order(df$distance),]
   newdf = df[1:neighbours,]
   y=0
@@ -31,5 +32,5 @@ knn <- function(age,loan, neighbours) {
   }
   result
 }
-result = knn(48,142000, 3)
+result = knn(48,142000, 10)
 print(result)
