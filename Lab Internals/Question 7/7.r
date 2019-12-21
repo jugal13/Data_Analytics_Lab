@@ -1,17 +1,29 @@
-library(ISLR)
 library(MASS)
-df = Default
+df = read.csv('vehicle_csv.csv')
 
-index = sample(x = 1:nrow(df), size = round(nrow(df) * 0.6))
-df_train = df[index, ]
+maxs = apply(df[ ,1:18], 2, max)
+mins = apply(df[ ,1:18], 2, min)
+dataset = as.data.frame(scale(data[ ,1:18], center = mins, scale = maxs - mins))
+dataset = cbind(dataset, "class" = df$Class)
 
-df_test = df[-index, ]
+index = sample(1:nrow(dataset), round(nrow(dataset) * 0.6), replace = FALSE)
+x_train = dataset[index, ]
+x_test = dataset[-index, ]
 
-model = lda(default ~ student + balance + income, data = df_train)
-summary(model)
+model = lda(class ~ ., data=x_train)
+projected_data = as.matrix(x_train[ ,1:18] )%*% model$scaling
 
-pred = predict(model, df_test)
-df_test$pred = pred$class
-df_test
+plot(projected_data, col = x_train[ ,19], pch = 19)
+model.results = predict(model, x_test)
+model.results
 
-table(df_test$pred, df_test$default)
+x_test$class
+head(x_test)
+
+X_test = x_test[, !( names( x_test ) %in% c( "class" ) ) ]
+head(X_test)
+
+model.results=predict(model, x_test[ ,1:18])
+
+length(model.results$class)
+table(x_test$class,model.results$class)

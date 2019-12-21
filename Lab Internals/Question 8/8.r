@@ -1,19 +1,32 @@
-library(ISLR)
 library(MASS)
+df_train = read.csv('titanic/train.csv')
+df_test = read.csv('titanic/test.csv')
 
-df = Default
-df$student = as.numeric(df$student)
-df$student = as.factor(df$student)
+colSums(is.na(df_train))
+space = function(x) { sum(x == "") }
+apply(df_train, 2, space)
+names(df_train)
 
-index = sample(1:nrow(df), round(nrow(df) * 0.6))
-df_train = df[index, ]
-df_test = df[-index, ]
+df_train_clean = subset(df_train, select = -c(PassengerId, Cabin, Ticket,Name))
+df_train_clean$Age[is.na(df_train_clean$Age)] = median(na.omit(df_train_clean$Age))
+colSums(is.na(df_train_clean))
 
-model = qda(default ~ student + balance + income, df_train)
-summary(model)
+index=sample(1:nrow(df_train_clean), size = round(nrow(df_train_clean) * 0.8), replace=FALSE)
+names(df_train_clean)
+apply(df_train_clean, 2, function(x) { sum(x == "") })
+df_train_clean = df_train_clean[!(df_train$Embarked == ""),]
+head(df_train_clean)
 
-pred = predict(model, df_test)
-df_test$pred = pred$class
-df_test
+df_train_clean$Survived = as.factor(df_train_clean$Survived)
+df_train_clean$Sex = as.factor(df_train_clean$Sex)
+df_train_clean$Embarked = as.factor(df_train_clean$Embarked)
+df_train_clean$Pclass = as.factor(df_train_clean$Pclass)
+str(df_train_clean)
 
-table(df_test$pred, df_test$default)
+x_train = df_train_clean[index, ]
+x_test = df_train_clean[-index, ]
+head(x_train)
+
+qda.model = qda (Survived ~ Pclass + Sex + Age + Parch, data=x_train)
+qda_prob <- predict(qda.model, newdata = x_test)
+table(Predicted = qda_prob$class, Actual = x_test$Survived)
